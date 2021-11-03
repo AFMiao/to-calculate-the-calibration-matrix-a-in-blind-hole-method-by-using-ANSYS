@@ -1,3 +1,5 @@
+! 工作目录
+! D:/LEARNING/Courses/IV/FECD/manual/code
 FINISH $ /CLEAR
 /FILNAME,3-02
 !==========
@@ -87,6 +89,8 @@ K,34,L/2+GW/2,L/2-R2
 K,41,0,0,H
 L,1,41
 PATH_D=_RETURN
+
+CSYS,0
 
 K,42,0,0,H-DEPTH
 L,1,42
@@ -237,11 +241,69 @@ ASSIT=0
   ! 将判断符合条件的单元编号
   ! 存入数组
   EORDER(J)=ASSIT
-*ENDDO
+*ENDDO  ! 结束循环
+
+!! 为数据提取做准备
+! 激活整体坐标系
+CSYS,0
+
+! 提取第一组应变片对应的节点序号
+! 选中第一组应变片对应的节点
+NSEL,S,LOC,X,L/2+R1,L/2+R2
+NSEL,R,LOC,Y,L/2-GW/2,L/2+GW/2
+NSEL,R,LOC,Z,DEPTH-0.01,DEPTH
+! 获取区域内节点最大序号
+*GET,NUM_GAUGE1_MAX,NODE,0,NUM,MAX
+! 获取区域内节点最小序号
+*GET,NUM_GAUGE1_MIN,NODE,0,NUM,MIN
+! 获取区域内节点数量
+*GET,COUNT_STRAIN_GAUGE1,NODE,0,COUNT
+! 定义一个用于储存节点序号的数组
+*DIM,STRAIN_GAUGE1,,COUNT_STRAIN_GAUGE1
+! 设定一个辅助参数
+II=0
+! 记录
+*DO,I,NUM_GAUGE1_MIN,NUM_GAUGE1_MAX,1
+  ! 判断单元是否被选中
+  *IF,ESEL(I),EQ,1,THEN
+    ! 如果单元被选中
+    II=II+1
+    ! 则将其记录在数组STRAIN_GAUGE1内
+    STRAIN_GAUGE1(II)=I
+  *ENDIF
+*ENDDO  ! 结束记录
+
+! 提取第二组应变片对应的节点序号
+! 选中第二组应变片对应的节点
+NSEL,S,LOC,X,L/2-GW/2,L/2+GW/2
+NSEL,R,LOC,Y,L/2-R2,L/2-R1
+NSEL,R,LOC,Z,DEPTH-0.01,DEPTH
+! 获取区域内节点最大序号
+*GET,NUM_GAUGE2_MAX,NODE,0,NUM,MAX
+! 获取区域内节点最小序号
+*GET,NUM_GAUGE2_MIN,NODE,0,NUM,MIN
+! 获取区域内节点数量
+*GET,COUNT_STRAIN_GAUGE2,NODE,0,COUNT
+! 定义一个用于储存节点序号的数组
+*DIM,STRAIN_GAUGE1,,COUNT_STRAIN_GAUGE2
+! 设定一个辅助参数
+II=0
+! 记录
+*DO,I,NUM_GAUGE2_MIN,NUM_GAUGE2_MAX,1
+  ! 判断单元是否被选中
+  *IF,ESEL(I),EQ,1,THEN
+    ! 如果单元被选中
+    II=II+1
+    ! 则将其记录在数组STRAIN_GAUGE2内
+    STRAIN_GAUGE2(II)=I
+  *ENDIF
+*ENDDO  ! 结束记录
+
 
 !! 生死单元法
 !-----TEST-----
 ! 选取单元
+CSYS,11
 ESEL,S,CENT,X,0,D0/2
 ESEL,R,CENT,Z,DEPTH-H,DEPTH
 EPLOT
