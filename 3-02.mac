@@ -14,7 +14,7 @@ GL = 1.59 $ GW = 1.59
 
 dh = 0.05 $ n = 20
 h = dh*n $ DA = DH*L
-SIGMA_X = 100E6
+SIGMA_X = 100
 
 E = 210E5 $ v = 0.3
 !==========
@@ -171,6 +171,10 @@ ASSIT=0
 ! 不要随意测试
 *DO,J,1,SUM_ELEM,1
   ! 每次排序时减去编号为ASSIT的单元
+  ! 注: 在刚开始进行排序时, 会弹出一个Warning:
+  ! Specified range of 0 to 0 is not permitted.
+  ! The ESEL command is ignored.
+  ! 并不影响计算
   ESEL,U,ELEM,,ASSIT
   ! 重新获取被选中单元的数量
   *GET,C,ELEM,,COUNT
@@ -345,6 +349,28 @@ DA,ALL,ALL
 
     !! 求解
     SOLVE
+
+    !! 提取应变片内的数据
+    ! 提取应变片1内的数据
+    SUM = 0  ! 创建一个求和系数
+    EPSILON1 = 0
+    *DO,K,1,COUNT_STRAIN_GAUGE1,1
+      *GET,D_EPSILON1,NODE,STRAIN_GAUGE1(K),EPTO,EQV
+      SUM = SUM+D_EPSILON1
+    *ENDDO
+    EPSILON1 = SUM/COUNT_STRAIN_GAUGE1
+
+    ! 提取应变片3内的数据
+    SUM = 0  ! 创建一个求和系数
+    EPSILON3 = 0
+    *DO,K,1,COUNT_STRAIN_GAUGE3,1
+      *GET,D_EPSILON3,NODE,STRAIN_GAUGE3(K),EPTO,EQV
+      SUM = SUM+D_EPSILON3
+    *ENDDO
+    EPSILON3 = SUM/COUNT_STRAIN_GAUGE3
+
+    !! 利用说明书中的式子计算校准系数
+    A_ni(I,J) = (EPSILON1+EPSILON3)*E)/(SIGMA_X)
   *ENDDO
 *ENDDO
 
