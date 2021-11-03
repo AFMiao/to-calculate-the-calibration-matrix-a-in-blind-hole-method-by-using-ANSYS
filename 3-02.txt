@@ -1,0 +1,254 @@
+FINISH $ /CLEAR
+/FILNAME,3-02
+!==========
+! 长度单位统一为mm
+! 用等式给参数赋值的时候
+! 运算符号前后不要加空格
+D = 5.13 $ D0 = 0.5*D
+DEPTH = 1.2*D $ L = 15*D
+
+R1 = 1.77 $ R2 = 3.36
+GL = 1.59 $ GW = 1.59
+
+dh = 0.05 $ n = 20
+h = dh*n
+
+E = 210E5 $ v = 0.3
+!==========
+/PREP7
+ET,1,SOLID95
+ET,2,MESH200,7
+
+MP,EX,1,E
+MP,PRXY,1,v
+MP,EX,2,E
+MP,PRXY,2,v
+!==========
+! 使用不省略的NEWTON-RAPHSON选项
+NROPT,FULL
+!==========
+! 建立工件下表面
+K,1,,,
+K,2,L,0,0
+K,3,L,L,0
+K,4,0,L,0
+
+L,1,2 $ L,2,3
+L,3,4 $ L,4,1
+
+AL,1,2,3,4
+A0=_RETURN
+
+! 建立圆面
+CYL4,L/2,L/2,D0/2
+NUM_CIR_P1=5  ! 第一象限的弧线的序号
+ASEL,A,LOC,X,L/2-D0/2-0.1,L/2+D0/2+0.1
+
+! 减去不必要的部分
+ASBA,A0,ALL,,DELETE,KEEP
+! 获取新生成的面的序号
+*GET,A0,AREA,0,NUM,MAX
+
+! 通过循环创建应变花
+K,11,L/2+R1,L/2+GW/2
+K,12,L/2+R1,L/2-GW/2
+K,13,L/2+R2,L/2-GW/2
+K,14,L/2+R2,L/2+GW/2
+
+K,21,L/2-0.5*D/1.414         ,L/2+0.5*D/1.414-GW/1.414
+K,22,L/2-0.5*D/1.414+GL/1.414,L/2+0.5*D/1.414
+K,23,L/2-0.5*D/1.414         ,L/2+0.5*D/1.414+GW/1.414
+K,24,L/2-0.5*D/1.414-GL/1.414,L/2+0.5*D/1.414
+
+K,31,L/2+GW/2,L/2-R1
+K,32,L/2-GW/2,L/2-R1
+K,33,L/2-GW/2,L/2-R2
+K,34,L/2+GW/2,L/2-R2
+
+*DIM,NUM_GAUGE,ARRAY,3,1
+*DO,I,1,3,1
+  L,10*I+1,10*I+2 $ L,10*I+2,10*I+3
+  L,10*I+3,10*I+4 $ L,10*I+4,10*I+1
+  L_CACHE=_RETURN
+
+  AL,L_CACHE-3,L_CACHE-2,L_CACHE-1,L_CACHE
+  A_CACHE=_RETURN
+
+  ! 减去不必要的部分
+  ASBA,A0,A_CACHE,,DELETE,KEEP
+  ! 获取新生成面的序号
+  *GET,A0,AREA,0,NUM,MAX
+  
+  ! 导出A_CACHE,有用
+  NUM_GAUGE(I,1)=A_CACHE
+*ENDDO
+
+! 拖拽出工件
+K,41,0,0,H
+L,1,41
+PATH_D=_RETURN
+
+K,42,0,0,H-DEPTH
+L,1,42
+PATH_UD=_RETURN
+
+ASEL,ALL
+VDRAG,ALL,,,,,,PATH_UD,PATH_D
+
+! SIZE CONTROL
+! 钻孔层
+LSEL,ALL
+LSEL,R,LENGTH,,H
+LESIZE,ALL,,,20
+
+! 非钻孔层
+LSEL,ALL
+LSEL,R,LENGTH,,DEPTH-H
+LESIZE,ALL,,,10
+
+! 边长
+LSEL,ALL
+LSEL,R,LENGTH,,L
+LESIZE,ALL,,,50
+
+! 其他
+LSEL,ALL
+LSEL,U,LENGTH,,H
+LSEL,U,LENGTH,,DEPTH-H
+LSEL,U,LENGTH,,L
+LESIZE,ALL,,,5
+
+ASEL,ALL
+ASEL,S,LOC,Z,DEPTH-0.01,DEPTH+0.01
+ASEL,A,LOC,Z,DEPTH-H-0.01,DEPTH-H+0.01
+ASEL,A,LOC,Z,0-0.01,0+0.01
+
+AATT,1,,2
+
+MSHAPE,0,2D
+MSHKEY,1
+AMESH,ALL
+
+MSHAPE,0,3D
+MSHKEY,1
+VSEL,ALL
+VATT,1,,1
+VSWEEP,ALL
+
+!! 选取单元
+! 建立柱坐标系, 命名为11
+K,100,L/2,L/2  ! 柱坐标系原点
+K,101,L,L/2  ! 柱坐标系x轴方向
+K,102,L/2,L  ! 柱坐标系"y"轴方向
+CSKP,11,1,100,101,102
+CSYS,11  ! 打开坐标系11
+
+! 选取单元
+ESEL,S,CENT,X,0,D0/2
+ESEL,R,CENT,Z,DEPTH-H,DEPTH
+
+!! 对单元进行排序
+! 获取最大单元编号
+*GET,EMAX,ELEM,,NUM,MAX
+! 获取单元数
+*GET,SUM_ELEM,ELEM,,COUNT
+! 定义五个维数等于单元数的数组
+*DIM,NE,,SUM_ELEM
+*DIM,EX,,SUM_ELEM
+*DIM,EY,,SUM_ELEM
+*DIM,EZ,,SUM_ELEM
+*DIM,EORDER,,SUM_ELEM
+! 定义一个参数
+ASSIT=0
+
+! 已测试该排序无误
+! 但排序耗时极长
+! 不要随意测试
+*DO,J,1,SUM_ELEM,1
+  ! 每次排序时减去编号为ASSIT的单元
+  ESEL,U,ELEM,,ASSIT
+  ! 重新获取被选中单元的数量
+  *GET,C,ELEM,,COUNT
+  ! 设置一个用于记录单元
+  ! 序号的参数II
+  II=0
+  
+  ! 记录单元序号
+  *DO,I,1,EMAX
+    ! 判断单元是否被选中
+    *IF,ESEL(I),EQ,1,THEN
+      II=II+1
+      ! 如果被选中
+      ! 则将其记录在数组NE内
+      NE(II)=I
+    *ENDIF
+  *ENDDO
+  
+  ! 获取数组内单元的坐标
+  *DO,I,1,C,1
+    *GET,EX(I),ELEM,NE(I),CENT,X
+    *GET,EY(I),ELEM,NE(I),CENT,Y
+    *GET,EZ(I),ELEM,NE(I),CENT,Z
+  *ENDDO
+  
+  ! 定义三个比较变量
+  MINX=1E10
+  MINY=1E10
+  MAXZ=0
+  
+  ! 对数组内单元的坐标进行排序
+  ! 排序原则:
+  ! 1. 优先选取Z最大的
+  ! 2. 若Z相等, 优先选取x最小的
+  ! 3. 若x相等, 优先选取y最小的
+  *DO,I,1,C,1
+    ! 如果单元Z大于MAXZ
+    *IF,EZ(I),GT,MAXZ,THEN
+      ! 将符合条件的单元的坐标
+      ! 赋值给比较变量
+      MINX=EX(I)
+      MINY=EY(I)
+      MAXZ=EZ(I)
+      ! 记录符合条件的单元号
+      ASSIT=NE(I)
+    *ELSEIF,EX(I),EQ,MAXZ,THEN
+      *IF,EX(I),LT,MINX,THEN
+        ! 将符合条件的单元的坐标
+        ! 赋值给比较变量
+        MINX=EX(I)
+        MINY=EY(I)
+        MAXZ=EZ(I)
+        ! 记录符合条件的单元号
+        ASSIT=NE(I)
+      *ELSEIF,EX(I),GT,MINX,THEN
+        *IF,EY(I),LT,MINY,THEN
+          ! 将符合条件的单元的坐标
+          ! 赋值给比较变量
+          MINX=EX(I)
+          MINY=EY(I)
+          MAXZ=EZ(I)
+          ! 记录符合条件的单元号
+          ASSIT=NE(I)
+        *ENDIF
+      *ENDIF
+    *ENDIF
+  *ENDDO
+  
+  ! 将判断符合条件的单元编号
+  ! 存入数组
+  EORDER(J)=ASSIT
+*ENDDO
+
+!! 生死单元法
+!-----TEST-----
+! 选取单元
+ESEL,S,CENT,X,0,D0/2
+ESEL,R,CENT,Z,DEPTH-H,DEPTH
+EPLOT
+
+! DEAD OR ALIVE
+*DO,I,1,SUM_ELEM,1
+  EKILL,EORDER(I)
+  ESEL,R,LIVE
+  EPLOT
+*ENDDO
