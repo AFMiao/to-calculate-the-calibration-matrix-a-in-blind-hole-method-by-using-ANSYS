@@ -348,6 +348,7 @@ DA,ALL,ALL
     F,ALL,FX,-DF
 
     !! 求解
+    NLGEOM,ON  ! 打开大变形效应
     SOLVE
 
     !! 提取应变片内的数据
