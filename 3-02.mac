@@ -179,103 +179,126 @@ II = 0  ! 辅助变量
   *ENDIF
 *ENDDO
 
-! 写出NE,EX,EY和EZ
-*CFOPEN,NE_EX_EY_EZ,dat
-*VWRITE,NE,EX,EY,EZ  ! 这里在/prep7里运行不了
-(960F6.0)
-*CFCLOSE
-
 !! 这里打算用matlab写一个排序程序
 !! 把他封装为exe后在ANSYS里面调用
 !! 不然排序太折磨人了
-*CREATE,datawrite,mac  ! 创建宏
-
+*CREATE,datawrite,mac  ! 创建写出宏
+! 写出NE
+*CFOPEN,NE,dat
+  *VWRITE,NE(1)
+  (960F6.0)
+*CFCLOSE
+! 写出EX
+*CFOPEN,EX,dat
+  *VWRITE,EX(1)
+  (960F11.9)
+*CFCLOSE
+! 写出EY
+*CFOPEN,EY,dat
+  *VWRITE,EY(1)
+  (960F12.6)
+*CFCLOSE
+! 写出EZ
+*CFOPEN,EZ,dat
+  *VWRITE,EZ(1)
+  (960F6.3)
+*CFCLOSE
 *END  ! 宏创建完毕
 Datawrite  ! 运行宏文件
 
-! 定义一个参数
-ASSIT=0
-! 已测试该排序无误
-! 但排序耗时极长
-! 不要随意测试
-*DO,J,1,SUM_ELEM,1
-  ! 每次排序时减去编号为ASSIT的单元
-  ! 注: 在刚开始进行排序时, 会弹出一个Warning:
-  ! Specified range of 0 to 0 is not permitted.
-  ! The ESEL command is ignored.
-  ! 并不影响计算
-  ESEL,U,ELEM,,ASSIT
-  ! 重新获取被选中单元的数量
-  *GET,C,ELEM,,COUNT
-  ! 设置一个用于记录单元
-  ! 序号的参数II
-  II=0
-  
-  ! 记录单元序号
-  *DO,I,1,EMAX
-    ! 判断单元是否被选中
-    *IF,ESEL(I),EQ,1,THEN
-      II=II+1
-      ! 如果被选中
-      ! 则将其记录在数组NE内
-      NE(II)=I
-    *ENDIF
-  *ENDDO
-  
-  ! 获取数组内单元的坐标
-  *DO,I,1,C,1
-    *GET,EX(I),ELEM,NE(II),CENT,X
-    *GET,EY(I),ELEM,NE(II),CENT,Y
-    *GET,EZ(I),ELEM,NE(II),CENT,Z
-  *ENDDO
-  
-  ! 定义三个比较变量
-  MINX=1E10
-  MINY=1E10
-  MAXZ=0
-  
-  ! 对数组内单元的坐标进行排序
-  ! 排序原则:
-  ! 1. 优先选取Z最大的
-  ! 2. 若Z相等, 优先选取x最小的
-  ! 3. 若x相等, 优先选取y最小的
-  *DO,I,1,C,1
-    ! 如果单元Z大于MAXZ
-    *IF,EZ(I),GT,MAXZ,THEN
-      ! 将符合条件的单元的坐标
-      ! 赋值给比较变量
-      MINX=EX(I)
-      MINY=EY(I)
-      MAXZ=EZ(I)
-      ! 记录符合条件的单元号
-      ASSIT=NE(II)
-    *ELSEIF,EX(I),EQ,MAXZ,THEN
-      *IF,EX(I),LT,MINX,THEN
-        ! 将符合条件的单元的坐标
-        ! 赋值给比较变量
-        MINX=EX(I)
-        MINY=EY(I)
-        MAXZ=EZ(I)
-        ! 记录符合条件的单元号
-        ASSIT=NE(II)
-      *ELSEIF,EX(I),GT,MINX,THEN
-        *IF,EY(I),LT,MINY,THEN
-          ! 将符合条件的单元的坐标
-          ! 赋值给比较变量
-          MINX=EX(I)
-          MINY=EY(I)
-          MAXZ=EZ(I)
-          ! 记录符合条件的单元号
-          ASSIT=NE(II)
-        *ENDIF
-      *ENDIF
-    *ENDIF
-  *ENDDO
-  
-  ! 将判断符合条件的单元编号
-  ! 存入数组
-  EORDER(J)=ASSIT
-*ENDDO  ! 结束循环
+!! 运行MATLAB排序文件
+/sys,sorting.exe
+
+!! 读入MATLAB排序结果
+*CREATE,DATAREAD,MAC
+*VREAD,EORDER(1),EORDER,dat,,IJK
+(f6.0)
+*END
+DATAREAD
+
+!! 定义一个参数
+!ASSIT=0
+!! 已测试该排序无误
+!! 但排序耗时极长
+!! 不要随意测试
+!*DO,J,1,SUM_ELEM,1
+!  ! 每次排序时减去编号为ASSIT的单元
+!  ! 注: 在刚开始进行排序时, 会弹出一个Warning:
+!  ! Specified range of 0 to 0 is not permitted.
+!  ! The ESEL command is ignored.
+!  ! 并不影响计算
+!  ESEL,U,ELEM,,ASSIT
+!  ! 重新获取被选中单元的数量
+!  *GET,C,ELEM,,COUNT
+!  ! 设置一个用于记录单元
+!  ! 序号的参数II
+!  II=0
+!  
+!  ! 记录单元序号
+!  *DO,I,1,EMAX
+!    ! 判断单元是否被选中
+!    *IF,ESEL(I),EQ,1,THEN
+!      II=II+1
+!      ! 如果被选中
+!      ! 则将其记录在数组NE内
+!      NE(II)=I
+!    *ENDIF
+!  *ENDDO
+!  
+!  ! 获取数组内单元的坐标
+!  *DO,I,1,C,1
+!    *GET,EX(I),ELEM,NE(II),CENT,X
+!    *GET,EY(I),ELEM,NE(II),CENT,Y
+!    *GET,EZ(I),ELEM,NE(II),CENT,Z
+!  *ENDDO
+!  
+!  ! 定义三个比较变量
+!  MINX=1E10
+!  MINY=1E10
+!  MAXZ=0
+!  
+!  ! 对数组内单元的坐标进行排序
+!  ! 排序原则:
+!  ! 1. 优先选取Z最大的
+!  ! 2. 若Z相等, 优先选取x最小的
+!  ! 3. 若x相等, 优先选取y最小的
+!  *DO,I,1,C,1
+!    ! 如果单元Z大于MAXZ
+!    *IF,EZ(I),GT,MAXZ,THEN
+!      ! 将符合条件的单元的坐标
+!      ! 赋值给比较变量
+!      MINX=EX(I)
+!      MINY=EY(I)
+!      MAXZ=EZ(I)
+!      ! 记录符合条件的单元号
+!      ASSIT=NE(II)
+!    *ELSEIF,EX(I),EQ,MAXZ,THEN
+!      *IF,EX(I),LT,MINX,THEN
+!        ! 将符合条件的单元的坐标
+!        ! 赋值给比较变量
+!        MINX=EX(I)
+!        MINY=EY(I)
+!        MAXZ=EZ(I)
+!        ! 记录符合条件的单元号
+!        ASSIT=NE(II)
+!      *ELSEIF,EX(I),GT,MINX,THEN
+!        *IF,EY(I),LT,MINY,THEN
+!          ! 将符合条件的单元的坐标
+!          ! 赋值给比较变量
+!          MINX=EX(I)
+!          MINY=EY(I)
+!          MAXZ=EZ(I)
+!          ! 记录符合条件的单元号
+!          ASSIT=NE(II)
+!        *ENDIF
+!      *ENDIF
+!    *ENDIF
+!  *ENDDO
+!  
+!  ! 将判断符合条件的单元编号
+!  ! 存入数组
+!  EORDER(J)=ASSIT
+!*ENDDO  ! 结束循环
 
 !! 为数据提取做准备
 ! 激活整体坐标系
@@ -299,7 +322,7 @@ II=0
 ! 记录
 *DO,I,NUM_GAUGE1_MIN,NUM_GAUGE1_MAX,1
   ! 判断单元是否被选中
-  *IF,ESEL(I),EQ,1,THEN
+  *IF,NSEL(I),EQ,1,THEN
     ! 如果单元被选中
     II=II+1
     ! 则将其记录在数组STRAIN_GAUGE1内
@@ -325,7 +348,7 @@ II=0
 ! 记录
 *DO,I,NUM_GAUGE3_MIN,NUM_GAUGE3_MAX,1
   ! 判断单元是否被选中
-  *IF,ESEL(I),EQ,1,THEN
+  *IF,NSEL(I),EQ,1,THEN
     ! 如果单元被选中
     II=II+1
     ! 则将其记录在数组STRAIN_GAUGE2内
@@ -337,8 +360,10 @@ II=0
 *DIM,A_ni,ARRAY,N,N
 
 !! 为底面加约束
-ASEL,S,LOC,Z,0-0.01,0+0.01
-DA,ALL,ALL
+NSEL,S,LOC,Z,0-0.01,0+0.01
+D,NODE,ALL
+
+NLGEOM,ON  ! 打开大变形效应
 
 !! 分步加载并求解
 *DO,I,1,N,1
@@ -351,6 +376,9 @@ DA,ALL,ALL
   
   ! 循环内循环
   *DO,J,1,I,1
+    ! 清除所有作用在节点上的力
+    NSEL,ALL
+    FDELE,NODE,ALL
     ! 选中右侧待加载节点
     NSEL,S,LOC,X,L-0.01,L+0.01
     NSEL,R,LOC,Z,DEPTH-J*DH-0.01,DEPTH-(J-1)*DH+0.01
@@ -359,7 +387,7 @@ DA,ALL,ALL
     *GET,NUM_CACHE,NODE,0,COUNT
 
     ! 计算应分摊到每个节点上的数量
-    DF = SIGMA_X * DA / NUM_CACHE
+    *SET,DF,SIGMA_X*DA/NUM_CACHE
 
     ! 加载
     F,ALL,FX,DF
@@ -372,22 +400,23 @@ DA,ALL,ALL
     *GET,NUM_CACHE,NODE,0,COUNT
 
     ! 计算应分摊到每个节点上的数量
-    DF = SIGMA_X * DA / NUM_CACHE
+    *SET,DF,SIGMA_X*DA/NUM_CACHE
 
     ! 加载
     F,ALL,FX,-DF
+    
+    ALLSEL,ALL
 
     !! 求解
-    NLGEOM,ON  ! 打开大变形效应
     SOLVE
 
     !! 提取应变片内的数据
     ! 提取应变片1内的数据
-    SUM = 0  ! 创建一个求和系数
-    EPSILON1 = 0
+    *SET,SUM,0  ! 创建一个求和系数
+    *SET,EPSILON1,0
     *DO,K,1,COUNT_STRAIN_GAUGE1,1
       *GET,D_EPSILON1,NODE,STRAIN_GAUGE1(K),EPTO,EQV
-      SUM = SUM+D_EPSILON1
+      *SET,SUM,SUM+D_EPSILON1
     *ENDDO
     EPSILON1 = SUM/COUNT_STRAIN_GAUGE1
 
@@ -396,13 +425,14 @@ DA,ALL,ALL
     EPSILON3 = 0
     *DO,K,1,COUNT_STRAIN_GAUGE3,1
       *GET,D_EPSILON3,NODE,STRAIN_GAUGE3(K),EPTO,EQV
-      SUM = SUM+D_EPSILON3
+      *SET,SUM,SUM+D_EPSILON3
     *ENDDO
-    EPSILON3 = SUM/COUNT_STRAIN_GAUGE3
+    *SET,EPSILON3,SUM/COUNT_STRAIN_GAUGE3
 
     !! 利用说明书中的式子计算校准系数
-    A_ni(I,J) = (EPSILON1+EPSILON3)*E)/(SIGMA_X)
+    ! A_ni(I,J) = (EPSILON1+EPSILON3)*E)/(SIGMA_X)
   *ENDDO
+  FINISH
 *ENDDO
 
 
