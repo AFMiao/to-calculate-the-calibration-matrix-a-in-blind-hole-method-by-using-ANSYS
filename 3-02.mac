@@ -179,6 +179,12 @@ II = 0  ! 辅助变量
   *ENDIF
 *ENDDO
 
+! 写出NE,EX,EY和EZ
+*CFOPEN,NE_EX_EY_EZ,dat
+*VWRITE,NE,EX,EY,EZ  ! 这里在/prep7里运行不了
+(960F6.0)
+*CFCLOSE
+
 !! 这里打算用matlab写一个排序程序
 !! 把他封装为exe后在ANSYS里面调用
 !! 不然排序太折磨人了
