@@ -155,6 +155,8 @@ ESEL,R,CENT,Z,DEPTH-H,DEPTH
 !! 对单元进行排序
 ! 获取最大单元编号
 *GET,EMAX,ELEM,,NUM,MAX
+! 获取最小单元编号
+*GET,EMIN,ELEM,,NUM,MIN
 ! 获取单元数
 *GET,SUM_ELEM,ELEM,,COUNT
 ! 定义五个维数等于单元数的数组
@@ -163,15 +165,30 @@ ESEL,R,CENT,Z,DEPTH-H,DEPTH
 *DIM,EY,,SUM_ELEM
 *DIM,EZ,,SUM_ELEM
 *DIM,EORDER,,SUM_ELEM
-! 定义一个参数
-ASSIT=0
+
+! 获取单元的编号以及坐标数据
+II = 0  ! 辅助变量
+*DO,I,EMIN,EMAX,1
+  *IF,ESEL(I),EQ,1,THEN
+    II = II+1  ! 如果单元被选中
+    NE(II) = I  ! 则将其的序号记录在数组NE内
+    ! 将其的坐标记录在数组内
+    *GET,EX(II),ELEM,NE(II),CENT,X
+    *GET,EY(II),ELEM,NE(II),CENT,Y
+    *GET,EZ(II),ELEM,NE(II),CENT,Z
+  *ENDIF
+*ENDDO
 
 !! 这里打算用matlab写一个排序程序
 !! 把他封装为exe后在ANSYS里面调用
 !! 不然排序太折磨人了
-! 创建数据文件
+*CREATE,datawrite,mac  ! 创建宏
 
+*END  ! 宏创建完毕
+Datawrite  ! 运行宏文件
 
+! 定义一个参数
+ASSIT=0
 ! 已测试该排序无误
 ! 但排序耗时极长
 ! 不要随意测试
@@ -201,9 +218,9 @@ ASSIT=0
   
   ! 获取数组内单元的坐标
   *DO,I,1,C,1
-    *GET,EX(I),ELEM,NE(I),CENT,X
-    *GET,EY(I),ELEM,NE(I),CENT,Y
-    *GET,EZ(I),ELEM,NE(I),CENT,Z
+    *GET,EX(I),ELEM,NE(II),CENT,X
+    *GET,EY(I),ELEM,NE(II),CENT,Y
+    *GET,EZ(I),ELEM,NE(II),CENT,Z
   *ENDDO
   
   ! 定义三个比较变量
@@ -225,7 +242,7 @@ ASSIT=0
       MINY=EY(I)
       MAXZ=EZ(I)
       ! 记录符合条件的单元号
-      ASSIT=NE(I)
+      ASSIT=NE(II)
     *ELSEIF,EX(I),EQ,MAXZ,THEN
       *IF,EX(I),LT,MINX,THEN
         ! 将符合条件的单元的坐标
@@ -234,7 +251,7 @@ ASSIT=0
         MINY=EY(I)
         MAXZ=EZ(I)
         ! 记录符合条件的单元号
-        ASSIT=NE(I)
+        ASSIT=NE(II)
       *ELSEIF,EX(I),GT,MINX,THEN
         *IF,EY(I),LT,MINY,THEN
           ! 将符合条件的单元的坐标
@@ -243,7 +260,7 @@ ASSIT=0
           MINY=EY(I)
           MAXZ=EZ(I)
           ! 记录符合条件的单元号
-          ASSIT=NE(I)
+          ASSIT=NE(II)
         *ENDIF
       *ENDIF
     *ENDIF
