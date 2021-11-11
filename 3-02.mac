@@ -373,7 +373,11 @@ NLGEOM,ON  ! 打开大变形效应
 
 ALLSEL,ALL
 
+FINISH
+
 !!-----求解-----
+/SOLU
+
 !! 分步加载并求解
 *DO,I,1,N,1
   /SOLU
@@ -446,7 +450,7 @@ ALLSEL,ALL
 
     !! 利用说明书中的式子计算校准系数
     ! A_ni(I,J) = (EPSILON1+EPSILON3)*E)/(SIGMA_X)
-    FINISH
+    
   *ENDDO
 *ENDDO
 
