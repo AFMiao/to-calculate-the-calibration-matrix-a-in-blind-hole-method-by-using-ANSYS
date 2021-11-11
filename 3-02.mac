@@ -28,9 +28,6 @@ MP,PRXY,1,v
 MP,EX,2,E
 MP,PRXY,2,v
 !==========
-! 使用不省略的NEWTON-RAPHSON选项
-NROPT,FULL
-!==========
 ! 建立工件下表面
 K,1,,,
 K,2,L,0,0
@@ -357,33 +354,75 @@ II=0
   *ENDIF
 *ENDDO  ! 结束记录
 
-!! 创建校准矩阵A_ni
+! 创建校准矩阵A_ni
 *DIM,A_ni,ARRAY,N,N
-
-!! 为底面加约束
-NSEL,ALL
-NSEL,S,LOC,Z,0-0.01,0+0.01
-D,ALL,ALL
-
-NLGEOM,ON  ! 打开大变形效应
-
 ! 建立应变矩阵(ANSYS计算不了太复杂的式子)
 *DIM,M_E1,ARRAY,N,N
 *DIM,M_E3,ARRAY,N,N
 
 ALLSEL,ALL
-
 FINISH
 
 !!-----求解-----
 /SOLU
+ANTYPE,STATIC  ! 设置分析类型为STATIC
+NLGEOM,ON  ! 打开大变形效应
+NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+! 为底面加约束
+NSEL,ALL
+NSEL,S,LOC,Z,0-0.01,0+0.01
+D,ALL,ALL
+! 第0次求解
+ALLSEL,ALL
+SOLVE
+! 分步求解
+*DO,I,1,N,1
+  TIME,I
+  *DO,J,1+(I-1)*(SUM_ELEM/N),I*(SUM_ELEM/N),1
+    EKILL,EORDER(J)
+  *ENDDO
+  
+  ! 清除所有约束及载荷
+  LSCLEAR,ALL
+
+  !! 施加约束
+  NSEL,ALL
+  NSEL,S,LOC,Z,0-0.01,0+0.01
+  D,ALL,ALL
+  
+  !! 施加载荷
+  ! 选中右侧待加载节点
+  NSEL,ALL
+  NSEL,R,LOC,X,L-0.01,L+0.01
+  NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+  ! 获取选中节点数量
+  *GET,NUM_CACHE,NODE,0,COUNT
+  ! 计算应分摊到每个节点上的数量
+  *SET,DF,SIGMA_X*DA/NUM_CACHE
+  ! 加载
+  F,ALL,FX,DF
+  
+  ! 选中左侧待加载节点
+  NSEL,ALL
+  NSEL,S,LOC,X,0-0.01,0+0.01
+  NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+  ! 获取选中节点数量
+  *GET,NUM_CACHE,NODE,0,COUNT
+  ! 计算应分摊到每个节点上的数量
+  *SET,DF,SIGMA_X*DA/NUM_CACHE
+  ! 加载
+  F,ALL,FX,-DF
+  
+  ALLSEL,ALL
+  SOLVE
+*ENDDO
 
 !! 分步加载并求解
 *DO,I,1,N,1
   /SOLU
   ! BIRTH OR DEAD
   ESEL,ALL
-  *DO,J,1+SUM_ELEM/N*(I-1),SUM_ELEM/N*I,1
+  *DO,J,1+((SUM_ELEM/N))*(I-1),((SUM_ELEM/N))*I,1
     EKILL,EORDER(I)
   *ENDDO
   
