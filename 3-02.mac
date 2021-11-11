@@ -2,6 +2,7 @@
 ! D:/LEARNING/Courses/IV/FECD/manual/code
 FINISH $ /CLEAR
 /FILNAME,3-02
+/TITLE,3-02
 !==========
 ! 长度单位统一为mm
 ! 注: 用等式给参数赋值的时候
@@ -370,6 +371,9 @@ NLGEOM,ON  ! 打开大变形效应
 *DIM,M_E1,ARRAY,N,N
 *DIM,M_E3,ARRAY,N,N
 
+ALLSEL,ALL
+
+!!-----求解-----
 !! 分步加载并求解
 *DO,I,1,N,1
   /SOLU
