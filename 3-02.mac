@@ -214,99 +214,16 @@ Datawrite  ! 运行宏文件
 *END
 DATAREAD
 
-!! 定义一个参数
-!ASSIT=0
-!! 已测试该排序无误
-!! 但排序耗时极长
-!! 不要随意测试
-!*DO,J,1,SUM_ELEM,1
-!  ! 每次排序时减去编号为ASSIT的单元
-!  ! 注: 在刚开始进行排序时, 会弹出一个Warning:
-!  ! Specified range of 0 to 0 is not permitted.
-!  ! The ESEL command is ignored.
-!  ! 并不影响计算
-!  ESEL,U,ELEM,,ASSIT
-!  ! 重新获取被选中单元的数量
-!  *GET,C,ELEM,,COUNT
-!  ! 设置一个用于记录单元
-!  ! 序号的参数II
-!  II=0
-!  
-!  ! 记录单元序号
-!  *DO,I,1,EMAX
-!    ! 判断单元是否被选中
-!    *IF,ESEL(I),EQ,1,THEN
-!      II=II+1
-!      ! 如果被选中
-!      ! 则将其记录在数组NE内
-!      NE(II)=I
-!    *ENDIF
-!  *ENDDO
-!  
-!  ! 获取数组内单元的坐标
-!  *DO,I,1,C,1
-!    *GET,EX(I),ELEM,NE(II),CENT,X
-!    *GET,EY(I),ELEM,NE(II),CENT,Y
-!    *GET,EZ(I),ELEM,NE(II),CENT,Z
-!  *ENDDO
-!  
-!  ! 定义三个比较变量
-!  MINX=1E10
-!  MINY=1E10
-!  MAXZ=0
-!  
-!  ! 对数组内单元的坐标进行排序
-!  ! 排序原则:
-!  ! 1. 优先选取Z最大的
-!  ! 2. 若Z相等, 优先选取x最小的
-!  ! 3. 若x相等, 优先选取y最小的
-!  *DO,I,1,C,1
-!    ! 如果单元Z大于MAXZ
-!    *IF,EZ(I),GT,MAXZ,THEN
-!      ! 将符合条件的单元的坐标
-!      ! 赋值给比较变量
-!      MINX=EX(I)
-!      MINY=EY(I)
-!      MAXZ=EZ(I)
-!      ! 记录符合条件的单元号
-!      ASSIT=NE(II)
-!    *ELSEIF,EX(I),EQ,MAXZ,THEN
-!      *IF,EX(I),LT,MINX,THEN
-!        ! 将符合条件的单元的坐标
-!        ! 赋值给比较变量
-!        MINX=EX(I)
-!        MINY=EY(I)
-!        MAXZ=EZ(I)
-!        ! 记录符合条件的单元号
-!        ASSIT=NE(II)
-!      *ELSEIF,EX(I),GT,MINX,THEN
-!        *IF,EY(I),LT,MINY,THEN
-!          ! 将符合条件的单元的坐标
-!          ! 赋值给比较变量
-!          MINX=EX(I)
-!          MINY=EY(I)
-!          MAXZ=EZ(I)
-!          ! 记录符合条件的单元号
-!          ASSIT=NE(II)
-!        *ENDIF
-!      *ENDIF
-!    *ENDIF
-!  *ENDDO
-!  
-!  ! 将判断符合条件的单元编号
-!  ! 存入数组
-!  EORDER(J)=ASSIT
-!*ENDDO  ! 结束循环
-
 !! 为数据提取做准备
 ! 激活整体坐标系
 CSYS,0
 
 ! 提取第一组应变片对应的单元序号
 ! 选中第一组应变片对应的单元
-ESEL,S,CENT,X,L/2+R1,L/2+R2
+ESEL,ALL
+ESEL,R,CENT,X,L/2+R1,L/2+R2
 ESEL,R,CENT,Y,L/2-GW/2,L/2+GW/2
-ESEL,R,CENT,Z,DEPTH-0.01,DEPTH
+ESEL,R,CENT,Z,DEPTH-DH,DEPTH+DH
 ! 获取区域内单元最大序号
 *GET,NUM_GAUGE1_MAX,ELEM,0,NUM,MAX
 ! 获取区域内单元最小序号
@@ -330,9 +247,10 @@ II=0
 
 ! 提取第三组应变片对应的单元序号
 ! 选中第三组应变片对应的单元
-ESEL,S,CENT,X,L/2-GW/2,L/2+GW/2
+ESEL,ALL
+ESEL,R,CENT,X,L/2-GW/2,L/2+GW/2
 ESEL,R,CENT,Y,L/2-R2,L/2-R1
-ESEL,R,CENT,Z,DEPTH-DH,DEPTH
+ESEL,R,CENT,Z,DEPTH-DH,DEPTH+DH
 ! 获取区域内单元最大序号
 *GET,NUM_GAUGE3_MAX,ELEM,0,NUM,MAX
 ! 获取区域内单元最小序号
@@ -377,14 +295,18 @@ D,ALL,ALL
 ! 第0次求解
 ALLSEL,ALL
 SOLVE
+FINISH
 ! 分步求解
 *DO,I,1,N,1
+  /SOLU
   ! BIRTH OR DEATH
   *DO,J,1+(I-1)*(SUM_ELEM/N),I*(SUM_ELEM/N),1
     EKILL,EORDER(J)
   *ENDDO
+  FINISH
   
   *DO,K,1,N,1
+    /SOLU
     ! 设置载荷步
     *SET,TIME_STEP,100*I+K
     TIME,TIME_STEP
@@ -422,101 +344,30 @@ SOLVE
   
     ALLSEL,ALL
     SOLVE
+    FINISH
 
-    ! 提取数据
+    !! 提取数据
+    /POST1
     ETABLE,TABLE_EQV,EPTO,EQV
+
+    *SET,DEP,0 $ *SET,SUM_EP,0
     *DO,II,1,COUNT_STRAIN_GAUGE1,1
-      *SET,SUM_EP,SUM_EP+TABLE_EQV(II)
+      *GET,DEP,ELEM,STRAIN_GAUGE1(II),ETAB,TABLE_EQV
+      *SET,SUM_EP,SUM_EP+DEP
     *ENDDO
     *SET,AVG_EP,SUM_EP/COUNT_STRAIN_GAUGE1
     *SET,MATRIX_EP1(I,K),AVG_EP
-    *SET,SUM_EP,0
 
+    *SET,DEP,0 $ *SET,SUM_EP,0
     *DO,II,1,COUNT_STRAIN_GAUGE2,1
-      *SET,SUM_EP,SUM_EP+TABLE_EQV(II)
+      *GET,DEP,ELEM,STRAIN_GAUGE2(II),ETAB,TABLE_EQV
+      *SET,SUM_EP,SUM_EP+DEP
     *ENDDO
     *SET,AVG_EP,SUM_EP/COUNT_STRAIN_GAUGE2
     *SET,MATRIX_EP2(I,K),AVG_EP
-    *SET,SUM_EP,0
+    FINISH
   *ENDDO
 *ENDDO
-
-! !! 分步加载并求解
-! *DO,I,1,N,1
-!   /SOLU
-!   ! BIRTH OR DEAD
-!   ESEL,ALL
-!   *DO,J,1+((SUM_ELEM/N))*(I-1),((SUM_ELEM/N))*I,1
-!     EKILL,EORDER(I)
-!   *ENDDO
-  
-!   ! 循环内循环
-!   *DO,J,1,I,1
-!   /SOLU
-!     ! 清除所有作用在节点上的力
-!     NSEL,ALL
-!     FDELE,NODE,ALL
-!     ! 选中右侧待加载节点
-!     NSEL,S,LOC,X,L-0.01,L+0.01
-!     NSEL,R,LOC,Z,DEPTH-J*DH-0.01,DEPTH-(J-1)*DH+0.01
-
-!     ! 获取选中节点数量
-!     *GET,NUM_CACHE,NODE,0,COUNT
-
-!     ! 计算应分摊到每个节点上的数量
-!     *SET,DF,SIGMA_X*DA/NUM_CACHE
-
-!     ! 加载
-!     F,ALL,FX,DF
-  
-!     ! 选中左侧待加载节点
-!     NSEL,S,LOC,X,0-0.01,0+0.01
-!     NSEL,R,LOC,Z,DEPTH-J*DH-0.01,DEPTH-(J-1)*DH+0.01
-
-!     ! 获取选中节点数量
-!     *GET,NUM_CACHE,NODE,0,COUNT
-
-!     ! 计算应分摊到每个节点上的数量
-!     *SET,DF,SIGMA_X*DA/NUM_CACHE
-
-!     ! 加载
-!     F,ALL,FX,-DF
-    
-!     ALLSEL,ALL
-
-!     !! 求解
-!     SOLVE
-
-!     /POST1  ! 提取数据
-!     !! 提取应变片内的数据
-!     ! 提取应变片1内的数据
-!     *SET,SUM,0  ! 创建一个求和系数
-!     *SET,EPSILON1,0
-!     *DO,K,1,COUNT_STRAIN_GAUGE1,1
-!       ! *GET,D_E1,NODE,STRAIN_GAUGE1(K),EPTO,EQV
-!       ESOL,D_E1,STRAIN_GAUGE1(K),,S,EQV
-!       *SET,SUM,SUM+D_E1
-!     *ENDDO
-!     CACHE = SUM/COUNT_STRAIN_GAUGE1
-!     *SET,M_E1(I,J),CACHE
-
-!     ! 提取应变片3内的数据
-!     SUM = 0  ! 创建一个求和系数
-!     EPSILON3 = 0
-!     *DO,K,1,COUNT_STRAIN_GAUGE3,1
-!       ! *GET,D_E3,NODE,STRAIN_GAUGE3(K),EPTO,EQV
-!       ESOL,D_E3,STRAIN_GAUGE3(K),,S,EQV
-!       *SET,SUM,SUM+D_E3
-!     *ENDDO
-!     CACHE=SUM/COUNT_STRAIN_GAUGE3
-!     *SET,M_E3(I,J),CACHE
-
-!     !! 利用说明书中的式子计算校准系数
-!     ! A_ni(I,J) = (EPSILON1+EPSILON3)*E)/(SIGMA_X)
-    
-!   *ENDDO
-! *ENDDO
-
 
 !! 生死单元法
 !-----TEST-----
