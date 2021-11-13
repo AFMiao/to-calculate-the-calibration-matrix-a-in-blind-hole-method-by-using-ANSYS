@@ -17,10 +17,12 @@ dh = 0.05 $ n = 20
 h = dh*n $ DA = DH*L
 SIGMA_X = 100
 
-E = 210E5 $ v = 0.3
+E = 2.1E5 $ v = 0.3
 !==========
 /PREP7
 ET,1,SOLID185
+KEYOPT,1,2,3
+
 ET,2,MESH200,7
 
 MP,EX,1,E
@@ -288,14 +290,7 @@ FINISH
 ANTYPE,STATIC  ! 设置分析类型为STATIC
 NLGEOM,ON  ! 打开大变形效应
 NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
-! ! 为底面加约束
-! NSEL,ALL
-! NSEL,S,LOC,Z,0-0.01,0+0.01
-! D,ALL,ALL
-! ! 第0次求解
-! ALLSEL,ALL
-! SOLVE
-! FINISH
+
 ! 分步求解
 *DO,I,1,N,1  ! text
   /SOLU
@@ -316,7 +311,9 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
 
     !! 施加约束
     NSEL,ALL
-    NSEL,S,LOC,Z,0-0.01,0+0.01
+    NSEL,R,LOC,Z,0-0.01,0+0.01
+    NSEL,R,LOC,X,L/2-0.5,L/2+0.5
+    NSEL,R,LOC,Y,L/2-0.5,L/2+0.5
     D,ALL,UZ
   
     !! 施加载荷
