@@ -317,7 +317,7 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     !! 施加约束
     NSEL,ALL
     NSEL,S,LOC,Z,0-0.01,0+0.01
-    D,ALL,ALL
+    D,ALL,UZ
   
     !! 施加载荷
     ! 选中右侧待加载节点
