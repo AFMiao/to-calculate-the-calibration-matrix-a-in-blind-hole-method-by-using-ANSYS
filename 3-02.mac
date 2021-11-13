@@ -369,6 +369,7 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
   *ENDDO
 *ENDDO
 
+!! 输出应变矩阵
 *CREATE,MATRICES_OUTPUT,mac
 *MWRITE,MATRIX_EP1,EP1,dat,,JIK,20,20
 (20F25.22)
@@ -376,6 +377,9 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
 (20F25.22)
 *END
 MATRICES_OUTPUT
+
+!! 利用matlab进行计算
+/sys,calculate.exe
 
 !! 生死单元法
 !-----TEST-----
