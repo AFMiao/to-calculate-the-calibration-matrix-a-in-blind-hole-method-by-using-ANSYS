@@ -374,7 +374,8 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     ! 选中右侧待加载节点
     NSEL,ALL
     NSEL,R,LOC,X,L-0.01,L+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
+    NPLOT
     ! 获取选中节点数量
     *GET,NUM_CACHE,NODE,0,COUNT
     ! 计算应分摊到每个节点上的数量
@@ -385,7 +386,8 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     ! 选中左侧待加载节点
     NSEL,ALL
     NSEL,S,LOC,X,0-0.01,0+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
+    NPLOT
     ! 获取选中节点数量
     *GET,NUM_CACHE,NODE,0,COUNT
     ! 计算应分摊到每个节点上的数量
@@ -434,7 +436,8 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     ! 选中右侧待加载节点
     NSEL,ALL
     NSEL,R,LOC,X,L-0.01,L+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
+    NPLOT
     ! 获取选中节点数量
     *GET,NUM_CACHE,NODE,0,COUNT
     ! 计算应分摊到每个节点上的数量
@@ -445,7 +448,8 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     ! 选中左侧待加载节点
     NSEL,ALL
     NSEL,S,LOC,X,0-0.01,0+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.01,DEPTH-(I-1)*DH+0.01
+    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
+    NPLOT
     ! 获取选中节点数量
     *GET,NUM_CACHE,NODE,0,COUNT
     ! 计算应分摊到每个节点上的数量
