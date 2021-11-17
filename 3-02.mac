@@ -382,7 +382,7 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
   
     ! 选中左侧待加载单元
     ESEL,ALL
-    ESEL,S,LOC,X,0-D/3,0+D/3
+    ESEL,R,LOC,X,0-D/3,0+D/3
     ESEL,R,LOC,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
     SFE,ALL,5,PRES,1,SIGMA_X
   
@@ -432,7 +432,7 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
   
     ! 选中左侧待加载单元
     ESEL,ALL
-    ESEL,S,LOC,X,0-D/3,0+D/3
+    ESEL,R,LOC,X,0-D/3,0+D/3
     ESEL,R,LOC,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
     SFE,ALL,5,PRES,1,SIGMA_X
   
