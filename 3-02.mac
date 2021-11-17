@@ -388,9 +388,12 @@ FINISH
     ESEL,ALL
 
     ANTYPE,STATIC  ! 设置分析类型为STATIC
+    NSUBST,150
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+    LNSRCH,ON
     CNVTOL,F,,0.05,2,0.5
+    CNVTOL,U,,0.05,0,1
 
     SOLVE
     FINISH
@@ -447,9 +450,12 @@ FINISH
     EPLOT
     
     ANTYPE,STATIC  ! 设置分析类型为STATIC
+    NSUBST,150
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+    LNSRCH,ON
     CNVTOL,F,,0.05,2,0.5
+    CNVTOL,U,,0.05,0,1
 
     SOLVE
     FINISH
