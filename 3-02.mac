@@ -349,10 +349,6 @@ FINISH
 
 !!-----求解-----
 /SOLU
-ANTYPE,STATIC  ! 设置分析类型为STATIC
-NLGEOM,ON  ! 打开大变形效应
-NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
-
 ! 分步求解
 *DO,I,1,1,1
 ! *DO,I,1,N,1
@@ -390,6 +386,12 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
   
     ALLSEL,ALL
     ESEL,ALL
+
+    ANTYPE,STATIC  ! 设置分析类型为STATIC
+    NLGEOM,ON  ! 打开大变形效应
+    NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+    CNVTOL,F,,0.05,2,0.5
+
     SOLVE
     FINISH
 
@@ -443,6 +445,12 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
   
     ALLSEL,ALL
     EPLOT
+    
+    ANTYPE,STATIC  ! 设置分析类型为STATIC
+    NLGEOM,ON  ! 打开大变形效应
+    NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+    CNVTOL,F,,0.05,2,0.5
+
     SOLVE
     FINISH
 
