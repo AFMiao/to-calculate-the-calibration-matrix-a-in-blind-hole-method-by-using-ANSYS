@@ -8,7 +8,7 @@ FINISH $ /CLEAR
 ! 注: 用等式给参数赋值的时候
 ! 运算符号前后千万不要加空格
 D = 5.13 $ D0 = 0.5*D
-DEPTH = 1.2*D $ L = 10*D
+DEPTH = 1.2*D $ L = 6*D
 ENUM_L=10 $ ENUM_ARC=5
 
 R1 = 1.77 $ R2 = 3.36
@@ -368,7 +368,10 @@ FINISH
     LSCLEAR,ALL
 
     !! 施加约束
-    DK,5,UZ
+    ! DK,5,UZ
+    *DO,JJ,1,4,1
+      DK,I,ALL
+    *ENDDO
     !! 施加载荷
     ! 选中右侧待加载单元
     ESEL,ALL
@@ -388,12 +391,15 @@ FINISH
     EPLOT
 
     ANTYPE,STATIC  ! 设置分析类型为STATIC
-    NSUBST,50
+    ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
+    AUTOTS,ON  ! 自动时间步
+    NSUBST,200,1000000,20  ! 设置载荷步
+    NEQIT,100  ! 设置平衡迭代步数
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     LNSRCH,ON
-    CNVTOL,F,,0.05,2,0.5
-    CNVTOL,U,,0.05,0,1
+    ! CNVTOL,F,0.01,,,
+    ! CNVTOL,U,0.05,,,
 
     SOLVE
     FINISH
@@ -430,7 +436,10 @@ FINISH
     LSCLEAR,ALL
 
     !! 施加约束
-    DK,5,UZ
+    ! DK,5,UZ
+    *DO,JJ,1,4,1
+      DK,I,ALL
+    *ENDDO
     !! 施加载荷
     ! 选中右侧待加载单元
     ESEL,ALL
@@ -450,12 +459,15 @@ FINISH
     EPLOT
     
     ANTYPE,STATIC  ! 设置分析类型为STATIC
-    NSUBST,50
+    ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
+    AUTOTS,ON  ! 自动时间步
+    NSUBST,200,1000000,20  ! 设置载荷步
+    NEQIT,100  ! 设置平衡迭代步数
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     LNSRCH,ON
-    CNVTOL,F,,0.05,2,0.5
-    CNVTOL,U,,0.05,0,1
+    ! CNVTOL,F,0.01,,,
+    ! CNVTOL,U,0.05,,,
 
     SOLVE
     FINISH
