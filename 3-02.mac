@@ -388,7 +388,7 @@ FINISH
     EPLOT
 
     ANTYPE,STATIC  ! 设置分析类型为STATIC
-    NSUBST,150
+    NSUBST,50
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     LNSRCH,ON
@@ -450,7 +450,7 @@ FINISH
     EPLOT
     
     ANTYPE,STATIC  ! 设置分析类型为STATIC
-    NSUBST,150
+    NSUBST,50
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     LNSRCH,ON
