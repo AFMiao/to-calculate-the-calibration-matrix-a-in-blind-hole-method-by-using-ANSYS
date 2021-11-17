@@ -8,7 +8,7 @@ FINISH $ /CLEAR
 ! 注: 用等式给参数赋值的时候
 ! 运算符号前后千万不要加空格
 D = 5.13 $ D0 = 0.5*D
-DEPTH = 1.2*D $ L = 15*D
+DEPTH = 1.2*D $ L = 10*D
 ENUM_L=10 $ ENUM_ARC=5
 
 R1 = 1.77 $ R2 = 3.36
@@ -357,6 +357,9 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
 *DO,I,1,1,1
 ! *DO,I,1,N,1
   *DO,K,1,I,1
+    /VIEW,1,L,L,L
+    /ANG,1
+
     /SOLU
     ! BIRTH
     ESEL,NONE
@@ -371,29 +374,17 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     !! 施加约束
     DK,5,UZ
     !! 施加载荷
-    ! 选中右侧待加载节点
-    NSEL,ALL
-    NSEL,R,LOC,X,L-0.01,L+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
-    NPLOT
-    ! 获取选中节点数量
-    *GET,NUM_CACHE,NODE,0,COUNT
-    ! 计算应分摊到每个节点上的数量
-    *SET,DF,SIGMA_X*DA/NUM_CACHE
-    ! 加载
-    F,ALL,FX,DF
+    ! 选中右侧待加载单元
+    ESEL,ALL
+    ESEL,R,CENT,X,L-D/3,L+D/3
+    ESEL,R,CENT,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
+    SFE,ALL,2,PRES,1,SIGMA_X
   
-    ! 选中左侧待加载节点
-    NSEL,ALL
-    NSEL,S,LOC,X,0-0.01,0+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
-    NPLOT
-    ! 获取选中节点数量
-    *GET,NUM_CACHE,NODE,0,COUNT
-    ! 计算应分摊到每个节点上的数量
-    *SET,DF,SIGMA_X*DA/NUM_CACHE
-    ! 加载
-    F,ALL,FX,-DF
+    ! 选中左侧待加载单元
+    ESEL,ALL
+    ESEL,S,LOC,X,0-D/3,0+D/3
+    ESEL,R,LOC,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
+    SFE,ALL,2,PRES,1,SIGMA_X
   
     ALLSEL,ALL
     SOLVE
@@ -433,31 +424,20 @@ NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
     !! 施加约束
     DK,5,UZ
     !! 施加载荷
-    ! 选中右侧待加载节点
-    NSEL,ALL
-    NSEL,R,LOC,X,L-0.01,L+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
-    NPLOT
-    ! 获取选中节点数量
-    *GET,NUM_CACHE,NODE,0,COUNT
-    ! 计算应分摊到每个节点上的数量
-    *SET,DF,SIGMA_X*DA/NUM_CACHE
-    ! 加载
-    F,ALL,FX,DF
+    ! 选中右侧待加载单元
+    ESEL,ALL
+    ESEL,R,CENT,X,L-D/3,L+D/3
+    ESEL,R,CENT,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
+    SFE,ALL,2,PRES,1,SIGMA_X
   
-    ! 选中左侧待加载节点
-    NSEL,ALL
-    NSEL,S,LOC,X,0-0.01,0+0.01
-    NSEL,R,LOC,Z,DEPTH-I*DH-0.02,DEPTH-(I-1)*DH+0.02
-    NPLOT
-    ! 获取选中节点数量
-    *GET,NUM_CACHE,NODE,0,COUNT
-    ! 计算应分摊到每个节点上的数量
-    *SET,DF,SIGMA_X*DA/NUM_CACHE
-    ! 加载
-    F,ALL,FX,-DF
+    ! 选中左侧待加载单元
+    ESEL,ALL
+    ESEL,S,LOC,X,0-D/3,0+D/3
+    ESEL,R,LOC,Z,DEPTH-I*DH+0.01,DEPTH-(I-1)*DH+0.01
+    SFE,ALL,2,PRES,1,SIGMA_X
   
     ALLSEL,ALL
+    EPLOT
     SOLVE
     FINISH
 
@@ -512,3 +492,4 @@ MATRICES_OUTPUT
 !   ESEL,R,LIVE
 !   EPLOT
 ! *ENDDO
+
