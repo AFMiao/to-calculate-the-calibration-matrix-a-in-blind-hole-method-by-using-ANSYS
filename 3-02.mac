@@ -8,7 +8,7 @@ FINISH $ /CLEAR
 ! 注: 用等式给参数赋值的时候
 ! 运算符号前后千万不要加空格
 D = 5.13 $ D0 = 0.5*D
-DEPTH = 1.2*D $ L = 20*D
+DEPTH = 1.2*D $ L = 10*D
 ENUM_L=10 $ ENUM_ARC=5
 
 R1 = 1.77 $ R2 = 3.36
