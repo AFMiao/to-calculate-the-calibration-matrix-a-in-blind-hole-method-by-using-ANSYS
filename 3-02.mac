@@ -393,7 +393,7 @@ FINISH
     ANTYPE,STATIC  ! 设置分析类型为STATIC
     ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
     AUTOTS,ON  ! 自动时间步
-    NSUBST,200,1000000,20  ! 设置载荷步
+    NSUBST,200,1000000  ! 设置载荷步
     NEQIT,100  ! 设置平衡迭代步数
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
@@ -461,7 +461,7 @@ FINISH
     ANTYPE,STATIC  ! 设置分析类型为STATIC
     ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
     AUTOTS,ON  ! 自动时间步
-    NSUBST,200,1000000,20  ! 设置载荷步
+    NSUBST,200,1000000  ! 设置载荷步
     NEQIT,100  ! 设置平衡迭代步数
     NLGEOM,ON  ! 打开大变形效应
     NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
