@@ -328,7 +328,6 @@ FINISH
 /SOLU
 ! 分步求解
 *DO,I,1,N,1
-! *DO,I,1,N,1
   *DO,K,1,I,1
     /VIEW,1,L,L,L $ /ANG,1
     
