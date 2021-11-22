@@ -2,7 +2,7 @@ clear
 clc
 
 % 打开写有计算结果的文件
-fig_a = fopen('a.dat','r');
+fid_a = fopen('a.dat','r');
 a = fscanf(fid_a,'%f',[20 20]);
 a = a';
 
