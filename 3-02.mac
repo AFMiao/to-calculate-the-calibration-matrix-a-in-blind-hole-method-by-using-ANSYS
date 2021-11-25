@@ -23,7 +23,6 @@ E = 2.1E5 $ v = 0.3
 !==========
 /PREP7
 ET,1,SOLID186
-! KEYOPT,1,2,3
 
 ET,2,MESH200
 KEYOPT,2,1,7
