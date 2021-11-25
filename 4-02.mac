@@ -1,8 +1,8 @@
 ! 工作目录
 ! D:/LEARNING/Courses/IV/FECD/manual/code
 FINISH $ /CLEAR
-/FILNAME,3-02
-/TITLE,3-02
+/FILNAME,4-02
+/TITLE,4-02
 !==========
 ! 长度单位统一为mm
 ! 注: 用等式给参数赋值的时候
@@ -23,10 +23,9 @@ E = 2.1E5 $ v = 0.3
 !==========
 /PREP7
 ET,1,SOLID186
-! KEYOPT,1,2,3
+KEYOPT,1,3,1  ! 设置分层实体单元
 
-ET,2,MESH200
-KEYOPT,2,1,7
+ET,2,PLANE183
 
 MP,EX,1,E
 MP,PRXY,1,v
@@ -237,12 +236,6 @@ LESIZE,L_CACHE2,,,N
 
 ASEL,ALL
 VDRAG,ALL,,,,,,L_CACHE1,L_CACHE2
-
-! 将MESH200单元删除
-ESEL,ALL
-ESEL,R,TYPE,,2
-EMODIF,ALL,TYPE,1
-EMODIF,ALL,MAT,1
 
 
 !! 选取单元
