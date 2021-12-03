@@ -19,13 +19,18 @@ dh = 0.05 $ n = 20
 h = dh*n $ DA = DH*L
 SIGMA = 100
 
-E = 2.1E5 $ v = 0.3
+E1  = 230E3 $  E2 = 15E3 $  E3 = 15E3
+G12 =  24E3 $ G13 = 24E3 $ G23 = 5.03E3
+V12 =   0.2 $ V13 =  0.2 $ V23 = 0.25
 !==========
 /PREP7
-MP,EX,1,E
-MP,PRXY,1,v
-MP,EX,2,E
-MP,PRXY,2,V
+MP,  EX,1, E1 $ MP,  EY,1, E2 $ MP,  EZ,1,E3
+MP, GXY,1,G12 $ MP, GXZ,1,G13 $ MP, GYZ,1,G23
+MP,PRXY,1,V12 $ MP,PRXZ,1,V13 $ MP,PRYZ,1,V23
+
+MP,  EX,2, E2 $ MP,  EY,2, E1 $ MP,  EZ,2,E3
+MP, GXY,2,G12 $ MP, GXZ,2,G23 $ MP, GYZ,2,G13
+MP,PRXY,2,V12 $ MP,PRXZ,2,V23 $ MP,PRYZ,2,V13
 
 ET,1,SOLID186
 
