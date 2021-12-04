@@ -298,7 +298,7 @@ II = 0  ! 辅助变量
 ! 写出NE
 *CFOPEN,NE,dat
   *VWRITE,NE(1)
-  (960F6.0)
+  (960F7.0)
 *CFCLOSE
 ! 写出EX
 *CFOPEN,EX,dat
@@ -387,8 +387,8 @@ II=0
 *ENDDO  ! 结束记录
 
 ! 建立应变矩阵(ANSYS计算不了太复杂的式子)
-*DIM,MATRIX_EP1,ARRAY,N,N
-*DIM,MATRIX_EP3,ARRAY,N,N
+*DIM,MATRIX_EP1,ARRAY,N
+*DIM,MATRIX_EP3,ARRAY,N
 ! 建立两个算术用的变量
 *SET,SUM_EP,0
 *SET,AVG_EP,0
@@ -400,95 +400,96 @@ FINISH
 !!-----求解-----
 /SOLU
 ! 分步求解
+! *DO,I,1,2,1  ! TEST
 *DO,I,1,N,1
-  *DO,K,1,I,1
-    /VIEW,1,L,L,L $ /ANG,1
-    
-    /SOLU
-    ! 求解设置
-    ANTYPE,STATIC  ! 设置分析类型为STATIC
-    ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
-    AUTOTS,ON  ! 自动时间步
-    ! NSUBST,200,1000000,20  ! 设置载荷步
-    ! NEQIT,100  ! 设置平衡迭代步数
-    NLGEOM,ON  ! 打开大变形效应
-    NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
-    LNSRCH,ON
-
-    ! DEATH
-    *DO,J,1+(I-1)*(SUM_ELEM/N),I*(SUM_ELEM/N),1
-      EKILL,EORDER(J)
-    *ENDDO
-
-    ! 清除所有约束及载荷
-    LSCLEAR,ALL
-
-    !! 施加约束
-    *DO,JJ,1,4,1
-      DK,JJ,ALL
-    *ENDDO
-    
-    !! 施加载荷
-    ! 选取待加载单元
-    CSYS,11
-    ESEL,ALL
-    NSEL,ALL
-    NSEL,R,LOC,X,0,D0/2
-    ESLN,ALL
-    ESEL,U,CENT,X,0,D0/2
-    ESEL,R,CENT,Z,DEPTH-K*DH,DEPTH-(K-1)*DH
-
-    SFE,ALL,3,PRES,1,SIGMA
-
-    CSYS,0
+  /VIEW,1,L,L,L $ /ANG,1
   
-    ALLSEL,ALL
-    EPLOT
+  /SOLU
+  ! 求解设置
+  ANTYPE,STATIC  ! 设置分析类型为STATIC
+  ! EQSLV,PCG,1.0E-5  ! 设置求解器为预共轭梯度法, 公差为1.0E-5
+  AUTOTS,ON  ! 自动时间步
+  ! NSUBST,200,1000000,20  ! 设置载荷步
+  ! NEQIT,100  ! 设置平衡迭代步数
+  NLGEOM,ON  ! 打开大变形效应
+  NROPT,FULL  ! 使用不省略的NEWTON-RAPHSON选项
+  LNSRCH,ON
 
-    !! 求解
-    SOLVE
-    FINISH
-
-    !! 提取数据
-    /POST1
-    ETABLE,EPEL_Y,EPEL,Y
-    ETABLE,EPEL_X,EPEL,X
-
-    *SET,DEP,0
-    *SET,SUM_EP,0
-    *DO,II,1,COUNT_STRAIN_GAUGE1,1
-      *GET,DEP,ELEM,STRAIN_GAUGE1(II),ETAB,EPEL_X
-      *SET,SUM_EP,SUM_EP+DEP
-    *ENDDO
-    *SET,EP1,SUM_EP/COUNT_STRAIN_GAUGE1
-
-    *SET,DEP,0
-    *SET,SUM_EP,0
-    *DO,II,1,COUNT_STRAIN_GAUGE3,1
-      *GET,DEP,ELEM,STRAIN_GAUGE3(II),ETAB,EPEL_Y
-      *SET,SUM_EP,SUM_EP+DEP
-    *ENDDO
-    *SET,EP3,SUM_EP/COUNT_STRAIN_GAUGE3
-    FINISH
-
-    *SET,MATRIX_EP1(I,K),EP1
-    *SET,MATRIX_EP3(I,K),EP3
-    FINISH
+  ! DEATH
+  *DO,J,1+(I-1)*(SUM_ELEM/N),I*(SUM_ELEM/N),1
+    EKILL,EORDER(J)
   *ENDDO
+
+  ! 清除所有约束及载荷
+  LSCLEAR,ALL
+
+  !! 施加约束
+  *DO,JJ,1,4,1
+    DK,JJ,ALL
+  *ENDDO
+    
+  !! 施加载荷
+  ! 选取待加载单元
+  CSYS,11
+  ESEL,ALL
+  NSEL,ALL
+  NSEL,R,LOC,X,0,D0/2
+  ESLN,ALL
+  ESEL,U,CENT,X,0,D0/2
+  ESEL,R,CENT,Z,DEPTH-I*DH,DEPTH
+
+  SFE,ALL,3,PRES,1,SIGMA
+
+  CSYS,0
+  
+  ALLSEL,ALL
+  EPLOT
+
+  !! 求解
+  SOLVE
+  FINISH
+
+  !! 提取数据
+  /POST1
+  ETABLE,EPEL_Y,EPEL,Y
+  ETABLE,EPEL_X,EPEL,X
+
+  *SET,DEP,0
+  *SET,SUM_EP,0
+  *DO,II,1,COUNT_STRAIN_GAUGE1,1
+    *GET,DEP,ELEM,STRAIN_GAUGE1(II),ETAB,EPEL_X
+    *SET,SUM_EP,SUM_EP+DEP
+  *ENDDO
+  *SET,EP1,SUM_EP/COUNT_STRAIN_GAUGE1
+
+  *SET,DEP,0
+  *SET,SUM_EP,0
+  *DO,II,1,COUNT_STRAIN_GAUGE3,1
+    *GET,DEP,ELEM,STRAIN_GAUGE3(II),ETAB,EPEL_Y
+    *SET,SUM_EP,SUM_EP+DEP
+  *ENDDO
+  *SET,EP3,SUM_EP/COUNT_STRAIN_GAUGE3
+  FINISH
+
+  *SET,MATRIX_EP1(I),EP1
+  *SET,MATRIX_EP3(I),EP3
+  FINISH
 *ENDDO
 
 
 !! 输出应变矩阵
-*CREATE,MATRICES_OUTPUT,mac
-*MWRITE,MATRIX_EP1,EP1,dat,,JIK,20,20
-(20F25.22)
-*MWRITE,MATRIX_EP3,EP3,dat,,JIK,20,20
-(20F25.22)
+*CREATE,write_result,mac
+*CFOPEN,EP1,dat
+*VWRITE,MATRIX_EP1(1)
+(F15.13)
+*CFCLOSE
+*CFOPEN,EP3,dat
+*VWRITE,MATRIX_EP3(1)
+(F15.13)
+*CFCLOSE
 *END
-MATRICES_OUTPUT
+write_result
 
-!! 利用matlab进行计算
-/sys,calculate.exe
 
 !! 生死单元法
 !-----TEST-----
